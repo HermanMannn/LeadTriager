@@ -110,18 +110,22 @@ Pre-populate your Select options:
 2. Add **Gmail → Watch Emails** as the first module
 3. Add **HTTP → Make a request** as the second module:
    - URL: `https://your-ngrok-url/api/triage`
-   - Method: POST
-   - Body type: `application/json`
-   - Body:
-```json
-{
-  "sender_email": "{{1.from.address}}",
-  "sender_name": "{{1.from.name}}",
-  "subject": "{{1.subject}}",
-  "body": "{{1.text}}"
-}
-```
-4. Activate the scenario
+   - Method: `POST`
+   - Body content type: `application/json`
+   - Body input method: `Key-Value`
+   - Add these 4 key-value pairs:
+
+| Key | Value |
+|---|---|
+| `sender_email` | `1. From (email)` |
+| `sender_name` | `1. From (name)` |
+| `subject` | `1. Subject` |
+| `body` | `1. Full text body` |
+
+> ⚠️ Use **Key-Value** mode, not JSON string — email bodies contain special characters that break raw JSON strings in Make.com.
+
+4. Send the test email to Gmail **first**, then click **Run once** — Make.com picks up emails that already arrived, it doesn't wait for new ones.
+5. Activate the scenario
 
 ---
 
@@ -189,6 +193,8 @@ A single CrewAI agent powered by Gemini 2.5 Flash reads the raw email and return
 ```
 
 The agent is prompted to handle any language and always return the summary in English, making it easy for your team to triage without needing to read the original language.
+
+The FastAPI endpoint accepts both `application/json` and `application/x-www-form-urlencoded` content types, making it compatible with Make.com's Key-Value body mode out of the box.
 
 ---
 
