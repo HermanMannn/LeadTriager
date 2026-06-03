@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+python-dotenv
+crewai
+langchain-community
+httpx
+beautifulsoup4
