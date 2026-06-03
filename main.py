@@ -1,7 +1,7 @@
 import os
 import json
 import urllib.request
-from fastapi import FastAPI, BackgroundTasks
+from fastapi import FastAPI, BackgroundTasks, Request
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from crewai import Agent, Task, Crew, Process, LLM
@@ -151,16 +151,22 @@ Return ONLY this JSON with no extra text or markdown:
 
 
 @app.post("/api/triage")
-def triage_inquiry(request: InquiryRequest, background_tasks: BackgroundTasks):
-    background_tasks.add_task(
-        run_triage,
-        request.sender_email,
-        request.sender_name,
-        request.subject,
-        request.body
-    )
-    return {"status": "ok", "message": f"Triaging inquiry from {request.sender_email}"}
+async def triage_inquiry(request: Request, background_tasks: BackgroundTasks):
+    content_type = request.headers.get("content-type", "")
+    
+    if "application/json" in content_type:
+        data = await request.json()
+    else:
+        form = await request.form()
+        data = dict(form)
 
+    sender_email = data.get("sender_email", "")
+    sender_name = data.get("sender_name", "Unknown")
+    subject = data.get("subject", "")
+    body = data.get("body", "")
+
+    background_tasks.add_task(run_triage, sender_email, sender_name, subject, body)
+    return {"status": "ok", "message": f"Triaging inquiry from {sender_email}"}
 
 if __name__ == "__main__":
     import uvicorn
